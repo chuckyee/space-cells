@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from __future__ import print_function, division
-from argparse import ArgumentParser
 
 from torch import nn
 
@@ -10,6 +9,22 @@ from ignite.metrics import CategoricalAccuracy, Loss
 
 
 def main():
+    logging.info("Load dataset...")
+    train_loader, val_loader = dataset.get_data_loaders(args)
+
+    logging.info("Construct model...")
+    model = select_model(args.model, args.nlabels, args.pretrained)
+    logging.info("Number of trainable parameters: {}".format(
+        model.num_trainable_parameters()))
+    logging.info(str(model))
+
+    # loss
+    criterion = nn.BCEWithLogitsLoss()
+
+    # optimizer
+    OptimClass, kwargs = select_optimizer(args.optimizer, args.learning_rate)
+    optimizer = OptimClass(model.parameters(), **kwargs)
+
     encoder = Encoder()
     decoder = Decoder()
     for epoch in range(args.epochs):
@@ -27,10 +42,7 @@ def main():
     
 
 if __name__ == '__main__':
-    parser = ArgumentParser()
 
-    parser.add_argument()
+    args = parameters.get_args(log=True)
 
-    args = parser.parse_args()
-    
     main(args)
